@@ -32,11 +32,11 @@ class UserModel extends Model
         if ($rootId !== null) {
             $sql = "
             WITH RECURSIVE cte AS (
-              SELECT id, name, email, role, invited_by, 0 AS level
+              SELECT id, name, email, role, campaign_id, phone, invited_by, 0 AS level
               FROM {$this->table}
               WHERE id = ?
               UNION ALL
-              SELECT u.id, u.name, u.email, u.role, u.invited_by, cte.level + 1
+              SELECT u.id, u.name, u.email, u.role, u.campaign_id, u.phone, u.invited_by, cte.level + 1
               FROM {$this->table} u
               JOIN cte ON u.invited_by = cte.id
             )
@@ -47,11 +47,11 @@ class UserModel extends Model
             // pegar todas as raízes (invited_by IS NULL)
             $sql = "
             WITH RECURSIVE cte AS (
-              SELECT id, name, email, role, invited_by, 0 AS level
+              SELECT id, name, email, role, campaign_id, phone, invited_by, 0 AS level
               FROM {$this->table}
               WHERE invited_by IS NULL
               UNION ALL
-              SELECT u.id, u.name, u.email, u.role, u.invited_by, cte.level + 1
+              SELECT u.id, u.name, u.email, u.role, u.campaign_id, u.phone, u.invited_by, cte.level + 1
               FROM {$this->table} u
               JOIN cte ON u.invited_by = cte.id
             )
@@ -66,7 +66,7 @@ class UserModel extends Model
     public function getHierarchyFallback(int $rootId = null)
     {
         // pega todos os usuários (pode limitar campos)
-        $all = $this->select('id, name, email, role, invited_by')->findAll();
+        $all = $this->select('id, name, email, role, campaign_id, phone, invited_by')->findAll();
 
         if ($rootId === null) {
             return $all; // O frontend/pHP fará a montagem da árvore usando invited_by NULL como raízes

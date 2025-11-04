@@ -70,6 +70,8 @@ class Network extends ResourceController
                 'name' => $r['name'],
                 'email' => $r['email'],
                 'role' => $r['role'],
+                'campaing_id' => $r['campaign_id'],
+                'phone' => $r['phone'],
                 'invited_by' => isset($r['invited_by']) ? ($r['invited_by'] !== null ? (int)$r['invited_by'] : null) : null,
                 'children' => []
             ];
