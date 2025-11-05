@@ -1,4 +1,6 @@
-<?php namespace App\Controllers\api;
+<?php
+
+namespace App\Controllers\api;
 
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\UserModel;
@@ -7,10 +9,12 @@ class Network extends ResourceController
 {
     protected $format = 'json';
     protected $userModel;
+    protected $request;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
+        $this->request = request();
     }
 
     /**
@@ -103,6 +107,93 @@ class Network extends ResourceController
                 return $nodes[$rootId];
             } else {
                 return []; // root não encontrado
+            }
+        }
+
+        return $tree;
+    }
+
+    public function getCampaignUser()
+    {
+        $data = $this->request->getJSON(true);
+        if (!$data) {
+            return $this->fail('Invalid JSON data', 400);
+        }
+
+        if (!isset($data['campaign_id']) || !isset($data['invited_by'])) {
+            return $this->failValidationErrors([
+                'message' => 'Both campaign_id and invited_by are required'
+            ]);
+        }
+
+        $campaignId = (int)$data['campaign_id'];
+        $invitedBy = (int)$data['invited_by'];
+
+        // Busca todos os usuários da campanha
+        $users = $this->userModel
+            ->where('campaign_id', $campaignId)
+            ->findAll();
+
+        if (!$users) {
+            return $this->respond([
+                'status' => 'success',
+                'data' => []
+            ], 200);
+        }
+
+        // Remove dados sensíveis
+        foreach ($users as &$user) {
+            unset($user['password']);
+        }
+
+        // Montar a árvore (usando mesmo método da tree())
+        $tree = $this->buildTreeCampaign($users, $invitedBy);
+
+        return $this->respond([
+            'status' => 'success',
+            'data' => $tree
+        ], 200);
+    }
+
+    /**
+     * Monta uma árvore apenas para uma campanha específica.
+     * Similar à buildTree(), mas parte de um nó raiz (invited_by)
+     */
+    protected function buildTreeCampaign(array $rows, $rootId = null)
+    {
+        $nodes = [];
+        foreach ($rows as $r) {
+            $nodes[$r['id']] = [
+                'id' => (int)$r['id'],
+                'name' => $r['name'],
+                'email' => $r['email'],
+                'role' => $r['role'],
+                'campaign_id' => $r['campaign_id'],
+                'phone' => $r['phone'],
+                'invited_by' => isset($r['invited_by']) ? ($r['invited_by'] !== null ? (int)$r['invited_by'] : null) : null,
+                'children' => []
+            ];
+        }
+
+        // Construir a hierarquia
+        foreach ($nodes as $id => &$node) {
+            $parent = $node['invited_by'];
+            if ($parent !== null && isset($nodes[$parent])) {
+                $nodes[$parent]['children'][] = &$node;
+            }
+        }
+        unset($node);
+
+        // Retornar a subárvore do nó pedido
+        if ($rootId !== null && isset($nodes[$rootId])) {
+            return $nodes[$rootId];
+        }
+
+        // Se não encontrar o nó raiz, retorna os nós de topo
+        $tree = [];
+        foreach ($nodes as $n) {
+            if ($n['invited_by'] === null) {
+                $tree[] = $n;
             }
         }
 

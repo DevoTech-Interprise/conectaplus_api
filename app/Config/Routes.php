@@ -23,6 +23,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\api'], function($routes) 
 
     $routes->get('network/tree', 'Network::tree', ['filter' => 'jwt']);          // toda a árvore
     $routes->get('network/tree/(:num)', 'Network::tree/$1', ['filter' => 'jwt']); // subárvore do id
+    $routes->post('network/treeCampaign', 'Network::getCampaignUser');
 
     $routes->get('invite/generate/(:num)', 'InviteController::generate/$1', ['filter' => 'jwt']);
     $routes->post('invite/accept', 'InviteController::accept');
