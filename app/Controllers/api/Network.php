@@ -134,11 +134,19 @@ class Network extends ResourceController
             ->where('campaign_id', $campaignId)
             ->findAll();
 
-        if (!$users) {
+        // Busca o usuário raiz (invited_by), mesmo que não pertença à campanha
+        $rootUser = $this->userModel->find($invitedBy);
+
+        if (!$users && !$rootUser) {
             return $this->respond([
                 'status' => 'success',
                 'data' => []
             ], 200);
+        }
+
+        // Garante que o usuário raiz esteja incluído
+        if ($rootUser && !in_array($rootUser['id'], array_column($users, 'id'))) {
+            $users[] = $rootUser;
         }
 
         // Remove dados sensíveis

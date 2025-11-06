@@ -26,7 +26,7 @@ class CampaignController extends ResourceController
 
     public function show($id = null)
     {
-        $campaign = $this->model->where('created_by', $id)->first();
+        $campaign = $this->model->where('id', $id)->first();
         if (!$campaign) {
             return $this->failNotFound('Campaign not found');
         }
@@ -136,8 +136,24 @@ class CampaignController extends ResourceController
             $data['logo'] = $newLogoUrl;
         }
 
-        // ============ Remove campos vazios (para não sobrescrever com null) ============
-        $data = array_filter($data, fn($value) => $value !== null && $value !== '');
+        // ============ Trata o operator e remove outros campos vazios ============
+        // Guarda o valor do operator antes do filter
+        $operatorValue = array_key_exists('operator', $data) ? $data['operator'] : null;
+        
+        // Remove campos vazios exceto operator
+        $data = array_filter($data, function($value, $key) {
+            if ($key === 'operator') {
+                return true; // Mantém o operator para tratar depois
+            }
+            return $value !== null && $value !== '';
+        }, ARRAY_FILTER_USE_BOTH);
+
+        // Define explicitamente o operator como NULL se estiver vazio
+        if (array_key_exists('operator', $data)) {
+            $data['operator'] = (!empty($operatorValue) && is_numeric($operatorValue)) 
+                ? (int)$operatorValue 
+                : null;
+        }
 
         try {
             $this->model->update($id, $data);
@@ -145,7 +161,7 @@ class CampaignController extends ResourceController
             return $this->respond($updatedCampaign, 200);
         } catch (\Exception $e) {
             log_message('error', $e->getMessage());
-            return $this->failServerError('An error occurred while updating the campaign');
+            return $this->failServerError('An error occurred while updating the campaign '. $e->getMessage());
         }
     }
 
@@ -164,4 +180,6 @@ class CampaignController extends ResourceController
             return $this->failServerError('An error occurred while deleting the campaign');
         }
     }
+
+    
 }
