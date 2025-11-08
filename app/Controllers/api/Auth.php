@@ -230,6 +230,31 @@ class Auth extends ResourceController
         return $this->respond($data, 200);
     }
 
+    public function updateFotgotPassword()
+    {
+        $data = $this->request->getJSON(true);
+
+        if (! $data) {
+            return $this->fail('Invalid JSON data', 400);
+        }
+
+        $rules = [
+            'password' => 'required|min_length[6]|matches[password_confirm]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        try {
+
+            
+
+        } catch (\Exception $e) {
+            return $this->failServerError('An error occurred while updating the password');
+        }
+    }
+
     public function logout()
     {
         // If you want server-side logout, we can blacklist the provided JWT until it expires.

@@ -75,6 +75,7 @@ class CampaignController extends ResourceController
         $data['logo'] = $logoUrl; // apenas URL no banco
 
         try {
+            $data = array_filter($data);
             $campaignId = $this->model->insert($data);
             $campaign = $this->model->find($campaignId);
             return $this->respondCreated($campaign);
