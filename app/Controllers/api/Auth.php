@@ -139,6 +139,69 @@ class Auth extends ResourceController
         }
     }
 
+    public function searchWithEmail()
+    {
+        $data = $this->request->getJSON(true);
+        if (! $data || ! isset($data['email'])) {
+            return $this->fail('Email is required', 400);
+        }
+
+        try
+        {
+            $email = trim($data['email']);
+            $user = $this->userModel->where('email', $email)->first();
+            if (! $user) {
+                return $this->failNotFound('User not found');
+            }
+
+            // Remove password before returning user data
+            if (isset($user['password'])) {
+                unset($user['password']);
+            }
+
+            return $this->respond($user, 200);
+        } catch (\Exception $e) {
+            return $this->failServerError('An error occurred while searching for the user');
+        }
+    }
+
+    public function forgotPassword($id = null)
+    {
+        $data = $this->request->getJSON(true);
+
+        $rules = [
+            'password' => 'required|min_length[6]',
+        ];
+
+        if (! $this->validate($rules))
+        {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        if (!$data)
+        {
+            return $this->fail('Invalid JSON data', 400);
+        }
+
+        try {
+
+            $user = $this->userModel->where('id', $id)->first();
+
+            if (!$user) {
+                return $this->failNotFound('User not found');
+            }
+
+            $data = array_filter($data);
+
+            $this->userModel->update($id, $data);
+
+            return $this->respond(['message' => 'Password updated successfully'], 200);
+
+        } catch (\Exception $e) {
+            return $this->failServerError('An error occurred while processing the request');
+        }
+    }
+
     public function login()
     {
         // Login accepts separate inputs: 'email' OR 'phone' (one of them must be provided) and 'password'.
@@ -228,31 +291,6 @@ class Auth extends ResourceController
         ];
 
         return $this->respond($data, 200);
-    }
-
-    public function updateFotgotPassword()
-    {
-        $data = $this->request->getJSON(true);
-
-        if (! $data) {
-            return $this->fail('Invalid JSON data', 400);
-        }
-
-        $rules = [
-            'password' => 'required|min_length[6]|matches[password_confirm]',
-        ];
-
-        if (! $this->validate($rules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-
-        try {
-
-            
-
-        } catch (\Exception $e) {
-            return $this->failServerError('An error occurred while updating the password');
-        }
     }
 
     public function logout()

@@ -31,6 +31,10 @@ $routes->group('api', ['namespace' => 'App\Controllers\api'], function($routes) 
 
     $routes->resource('campaigns', ['controller' => 'CampaignController', 'filter' => 'jwt']);
     $routes->post('campaigns/update/(:num)', 'CampaignController::update/$1', ['filter' => 'jwt']);
+
+    // routes search users with email, this method will used in forgot password
+    $routes->post('users/searchByEmail', 'Auth::searchWithEmail');
+    $routes->post('users/forgotPassword/(:num)', 'Auth::forgotPassword/$1');
 });
 
 // // Example protected routes using the 'jwt' filter
