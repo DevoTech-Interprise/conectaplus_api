@@ -35,6 +35,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\api'], function($routes) 
     // routes search users with email, this method will used in forgot password
     $routes->post('users/searchByEmail', 'Auth::searchWithEmail');
     $routes->post('users/forgotPassword/(:num)', 'Auth::forgotPassword/$1');
+
+    // routes events
+    $routes->resource('events', ['controller' => 'EventsController', 'filter' => 'jwt']);
 });
 
 // // Example protected routes using the 'jwt' filter
