@@ -8,9 +8,6 @@ class NoticeModel extends Model
 {
     protected $table = 'notices';
     protected $primaryKey = 'id';
-
-    protected $useAutoIncrement = true;
-
     protected $allowedFields = [
         'title',
         'preview',
@@ -32,7 +29,7 @@ class NoticeModel extends Model
         'title'       => 'required|min_length[3]|max_length[255]',
         'preview'     => 'required',
         'image'       => 'permit_empty|max_length[255]',
-        'content'     => 'required|max_length[255]',
+        'content'     => 'required',
         'campaign_id' => 'required|integer',
         'created_by'  => 'required|integer',
     ];

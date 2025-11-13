@@ -1,18 +1,20 @@
-<?php 
+<?php
 
 namespace App\Controllers\api;
+
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\NoticeModel;
 
 class NoticeController extends ResourceController
 {
-    protected $modelName = NoticeModel::class;
+    protected $model;
     protected $format    = 'json';
     protected $request;
 
     public function __construct()
     {
         $this->request = request();
+        $this->model = new NoticeModel();
     }
 
     public function index()
@@ -47,7 +49,7 @@ class NoticeController extends ResourceController
                 mkdir($uploadPath, 0777, true);
             }
             $imageFile->move($uploadPath, $newName);
-            $baseUrl = base_url('upload/notices/images/');
+            $baseUrl = 'https://apiconecta.devotech.com.br/upload/notices/images/';
             $imageUrl = $baseUrl . $newName;
         }
 
@@ -61,12 +63,18 @@ class NoticeController extends ResourceController
         });
 
         try {
-            $this->model->insert($data);
-            $createdNotice = $this->model->where('id', $this->model->insertID())->first();
+            $noticeID = $this->model->insert($data);
+            $createdNotice = $this->model->where('id', $noticeID)->first();
+
+            if ($noticeID === false) {
+                return $this->failValidationErrors($this->model->errors());
+            }
+
             return $this->respondCreated([
                 'status' => 'success',
-                'data' => $createdNotice
-            ], 'Notice created successfully');
+                'data' => $createdNotice,
+                'message' => 'Notice created successfully'
+            ], 201);
         } catch (\Exception $e) {
             log_message('error', $e->getMessage());
             return $this->failServerError('Error creating notice: ' . $e->getMessage());
@@ -99,7 +107,7 @@ class NoticeController extends ResourceController
             }
             $newName = $imageFile->getRandomName();
             $imageFile->move($uploadPath, $newName);
-            $baseUrl = base_url('upload/notices/images/');
+            $baseUrl = 'https://apiconecta.devotech.com.br/upload/notices/images/';
             $newImageUrl = $baseUrl . $newName;
 
             // Delete old image if exists
@@ -123,7 +131,8 @@ class NoticeController extends ResourceController
             $updatedNotice = $this->model->where('id', $id)->first();
             return $this->respond([
                 'status' => 'success',
-                'data' => $updatedNotice
+                'data' => $updatedNotice,
+                'message' => 'Notice updated successfully'
             ], 200);
         } catch (\Exception $e) {
             log_message('error', $e->getMessage());
@@ -148,5 +157,3 @@ class NoticeController extends ResourceController
         }
     }
 }
-
-?>
