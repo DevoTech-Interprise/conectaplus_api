@@ -39,8 +39,18 @@ $routes->group('api', ['namespace' => 'App\Controllers\api'], function($routes) 
     // routes events
     $routes->resource('events', ['controller' => 'EventsController', 'filter' => 'jwt']);
 
+    // routes notices
     $routes->resource('notices', ['controller' => 'NoticeController', 'filter' => 'jwt']);
     $routes->post('notices/update/(:num)', 'NoticeController::update/$1', ['filter' => 'jwt']);
+
+    // routes comments
+    // $routes->post('comments' , 'CommentController::create', ['filter' => 'jwt']);
+    $routes->post('comments', 'CommentController::create', ['filter' => 'jwt']);
+    $routes->get('comments/notice/(:num)', 'CommentController::byNotice/$1', ['filter' => 'jwt']);
+
+    // routes likes
+    $routes->post('likes/toggle', 'LikeController::toggle', ['filter' => 'jwt']);
+    $routes->get('likes/notice/(:num)', 'LikeController::likesByNotice/$1', ['filter' => 'jwt']);
 });
 
 // // Example protected routes using the 'jwt' filter
