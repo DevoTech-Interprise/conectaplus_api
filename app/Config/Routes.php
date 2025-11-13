@@ -38,6 +38,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\api'], function($routes) 
 
     // routes events
     $routes->resource('events', ['controller' => 'EventsController', 'filter' => 'jwt']);
+
+    $routes->resource('notices', ['controller' => 'NoticeController', 'filter' => 'jwt']);
+    $routes->post('notices/update/(:num)', 'NoticeController::update/$1', ['filter' => 'jwt']);
 });
 
 // // Example protected routes using the 'jwt' filter
