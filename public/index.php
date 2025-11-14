@@ -3,6 +3,8 @@
 use CodeIgniter\Boot;
 use Config\Paths;
 
+date_default_timezone_set('America/Sao_Paulo');
+
 /*
  *---------------------------------------------------------------
  * CHECK PHP VERSION

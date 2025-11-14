@@ -24,13 +24,19 @@ class LikeController extends ResourceController
         $notice_id = $data['notice_id'] ?? null;
         $comment_id = $data['comment_id'] ?? null;
 
-        $like = $this->model
-            ->where('user_id', $user_id)
-            ->groupStart()
-                ->where('notice_id', $notice_id)
-                ->orWhere('comment_id', $comment_id)
-            ->groupEnd()
-            ->first();
+        // Build query based on whether it's a notice like or comment like
+        $query = $this->model->where('user_id', $user_id);
+
+        if ($comment_id) {
+            // Looking for like on a comment
+            $query->where('comment_id', $comment_id);
+        } else {
+            // Looking for like on a notice
+            $query->where('notice_id', $notice_id)
+                  ->where('comment_id', null);
+        }
+
+        $like = $query->first();
 
         if ($like) {
             // Remove like
