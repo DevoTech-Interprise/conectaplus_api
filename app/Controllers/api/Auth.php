@@ -56,7 +56,7 @@ class Auth extends ResourceController
             'email'    => 'required|valid_email|is_unique[users.email]',
             'password' => 'required|min_length[6]',
             'phone'    => 'required|is_unique[users.phone]',
-            'role'     => 'required|in_list[admin,user]',
+            'role'     => 'required|',
         ];
 
         $data = $this->request->getJSON(true);
@@ -72,7 +72,7 @@ class Auth extends ResourceController
         try {
             // Hash da senha
             if (isset($data['password']) && $data['password'] !== '') {
-                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+                $data['password'] = $data['password'];
             }
 
             // Gera um token único de convite
